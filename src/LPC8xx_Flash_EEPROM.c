@@ -1,7 +1,7 @@
 /*
 ===============================================================================
  Name        : LPC8xx_Flash_EEPROM.c
- Author      : $(author)
+ Author      : Joe Desbonnet
  Version     :
  Copyright   : $(copyright)
  Description : main definition
@@ -86,7 +86,7 @@ int main(void) {
     uart_send_string_z ("found in outher MCUs.\r\n\r\n");
     uart_send_string_z ("Documentation from https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM\r\n");
 
-    printf ("flash_page=%x\r\n", eeprom_flashpage);
+    //printf ("flash_page=%x\r\n", eeprom_flashpage);
 
 
     int i,j;
