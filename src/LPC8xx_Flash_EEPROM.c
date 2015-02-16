@@ -15,7 +15,7 @@
 #include <cr_section_macros.h>
 
 #include <sys/types.h>
-#include "myuart.h"
+#include "uart.h"
 
 
 int _write (int fd, const void *buf, size_t count) {
