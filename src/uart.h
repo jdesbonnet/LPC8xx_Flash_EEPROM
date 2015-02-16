@@ -44,7 +44,7 @@
 // End of line flag
 #define UART_BUF_FLAG_EOL (0x01<<0)
 
-void MyUARTInit(uint32_t baudrate);
-void MyUARTSendByte(uint8_t v);
+void uart_init(uint32_t baudrate);
+void uart_send_byte(uint8_t v);
 
 #endif /* MYUART_H_ */

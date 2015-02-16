@@ -26,7 +26,7 @@ volatile uint32_t uart_buf_flags=0;
 ** Returned value:		None
 **
 *****************************************************************************/
-void MyUARTInit(uint32_t baudrate)
+void uart_init(uint32_t baudrate)
 {
 
 	LPC_USART_TypeDef *UARTx = LPC_USART0;
@@ -67,23 +67,54 @@ void MyUARTInit(uint32_t baudrate)
 	UARTx->STAT = UART_STAT_CTS_DELTA | UART_STAT_DELTA_RXBRK;		/* Clear all status bits. */
 
 	// Enable UART interrupt
-	NVIC_EnableIRQ(UART0_IRQn);
+	//NVIC_EnableIRQ(UART0_IRQn);
+	//UARTx->INTENSET = UART_STAT_RXRDY | UART_STAT_TXRDY | UART_STAT_DELTA_RXBRK;	/* Enable UART interrupt */
 
-	UARTx->INTENSET = UART_STAT_RXRDY | UART_STAT_TXRDY | UART_STAT_DELTA_RXBRK;	/* Enable UART interrupt */
 	UARTx->CFG |= UART_CFG_UART_EN;
+
 	return;
 }
 
 
-void MyUARTSendByte (uint8_t v) {
+void uart_send_byte (uint8_t v) {
 	  // wait until data can be written to TXDATA
 	  while ( ! (LPC_USART0->STAT & (1<<2)) );
 	  LPC_USART0->TXDATA = v;
 }
 
-void MyUARTSendDrain () {
+int uart_read_line (char *buf, int maxlen) {
+	int count = 0;
+	uint8_t c;
+	while (count < maxlen) {
+		// Wait for char
+		while (! ( LPC_USART0->STAT & UART_STAT_RXRDY) );
+
+		c = LPC_USART0->RXDATA;
+		if (c == '\r') {
+			buf[count++] = 0;
+			return count;
+		} else {
+			buf[count++] = c;
+		}
+		if (count==maxlen) {
+			return count;
+		}
+	}
+}
+
+void uart_drain () {
 	// Wait for TXIDLE flag to be asserted
 	while ( ! (LPC_USART0->STAT & (1<<3)) );
+}
+
+/**
+ * Send zero-terminated string.
+ */
+void uart_send_string_z (char *buf) {
+	while (*buf != 0) {
+		uart_send_byte(*buf);
+		buf++;
+	}
 }
 
 void UART0_IRQHandler(void)
@@ -104,7 +135,7 @@ void UART0_IRQHandler(void)
 			uart_rxbuf[uart_rxi]=0; // zero-terminate buffer
 		} else if (c>31){
 			// echo
-			MyUARTSendByte(c);
+			uart_send_byte(c);
 
 			uart_rxbuf[uart_rxi] = c;
 			uart_rxi++;
