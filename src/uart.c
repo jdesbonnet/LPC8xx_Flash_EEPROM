@@ -1,20 +1,20 @@
 /*
- * myuart.c
+ * uart.c
  *
- *  Created on: 30 Jun 2013
- *      Author: joe
+ * LPC8xx lightweight UART library
+ *
+ * Created on: 30 Jun 2013
+ * Author: Joe Desbonnet based on NXP example code.
  */
 
 #include <string.h>
 
-#include "LPC8xx.h"			/* LPC8xx Peripheral Registers */
-
+#include "LPC8xx.h"
 #include "uart.h"
 
-
 volatile uint8_t uart_rxbuf[UART_BUF_SIZE];
-volatile uint32_t uart_rxi=0;
-volatile uint32_t uart_buf_flags=0;
+volatile uint32_t uart_rxbuf_index=0;
+volatile uint32_t uart_rxbuf_flags=0;
 
 /*****************************************************************************
 ** Function name:		UARTInit
@@ -76,32 +76,42 @@ void uart_init(uint32_t baudrate)
 }
 
 
+/**
+ * Transmit one byte on UART. If FIFO is full it will block
+ * until byte can be transmitted.
+ */
 void uart_send_byte (uint8_t v) {
 	  // wait until data can be written to TXDATA
 	  while ( ! (LPC_USART0->STAT & (1<<2)) );
 	  LPC_USART0->TXDATA = v;
 }
 
-int uart_read_line (char *buf, int maxlen) {
-	int count = 0;
-	uint8_t c;
-	while (count < maxlen) {
-		// Wait for char
-		while (! ( LPC_USART0->STAT & UART_STAT_RXRDY) );
+/**
+ * Read a CR terminated line. Cannot exceed UART_BUF_SIZE.
+ */
+int uart_read_line (char *buf) {
 
-		c = LPC_USART0->RXDATA;
-		if (c == '\r') {
-			buf[count++] = 0;
-			return count;
-		} else {
-			buf[count++] = c;
-		}
-		if (count==maxlen) {
-			return count;
-		}
+	// Wait until EOL flag set by IRQ handler.
+	while ( ! (uart_rxbuf_flags & UART_BUF_FLAG_EOL)) {
+		__WFI(); // Can reduce power by sleeping between IRQs
 	}
+
+	// Copy from uart.c internal buffer to supplied buffer.
+	int i=0;
+	do {
+		buf[i] = uart_rxbuf[i];
+	} while (uart_rxbuf[i++]!=0);
+
+	// Reset buffer and flags
+	uart_rxbuf_index=0;
+	uart_rxbuf_flags=0;
 }
 
+/**
+ * Wait until all bytes in FIFO have been transmitted. Typical
+ * use to ensure that a "reboot" or "sleep" message has been
+ * fully transmitted before rebooting/sleeping etc.
+ */
 void uart_drain () {
 	// Wait for TXIDLE flag to be asserted
 	while ( ! (LPC_USART0->STAT & (1<<3)) );
@@ -131,15 +141,15 @@ void UART0_IRQHandler(void)
 
 		// If CR flag EOL
 		if (c=='\r') {
-			uart_buf_flags |= UART_BUF_FLAG_EOL;
-			uart_rxbuf[uart_rxi]=0; // zero-terminate buffer
+			uart_rxbuf_flags |= UART_BUF_FLAG_EOL;
+			uart_rxbuf[uart_rxbuf_index]=0; // zero-terminate buffer
 		} else if (c>31){
 			// echo
 			uart_send_byte(c);
 
-			uart_rxbuf[uart_rxi] = c;
-			uart_rxi++;
-			if (uart_rxi == UART_BUF_SIZE) {
+			uart_rxbuf[uart_rxbuf_index] = c;
+			uart_rxbuf_index++;
+			if (uart_rxbuf_index == UART_BUF_SIZE) {
 				//MyUARTBufReset();
 			}
 		}

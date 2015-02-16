@@ -1,7 +1,7 @@
 /*
 ===============================================================================
  Name        : LPC8xx_Flash_EEPROM.c
- Author      : $(author)
+ Author      : Joe Desbonnet
  Version     :
  Copyright   : $(copyright)
  Description : main definition
