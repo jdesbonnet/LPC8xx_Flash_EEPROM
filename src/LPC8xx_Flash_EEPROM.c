@@ -73,22 +73,7 @@ void SwitchMatrix_Init()
 
 }
 
-int main(void) {
-
-	SwitchMatrix_Init();
-
-
-    uart_init(9600);
-
-    uart_send_string_z ("LPC8xx_Flash_EEPROM \r\n");
-    uart_send_string_z ("A demo of using LPC8xx in-application programming (IAP) as a means to persist\r\n");
-    uart_send_string_z ("settings etc when CPU is unpowered.. ie a way to emulate the EEPROM function\r\n");
-    uart_send_string_z ("found in outher MCUs.\r\n\r\n");
-    uart_send_string_z ("Documentation from https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM\r\n");
-
-    printf ("flash_page=%x\r\n", eeprom_flashpage);
-
-
+void display_eeprom_page () {
     int i,j;
     uint8_t c;
     for (i = 0; i < 4; i++) {
@@ -114,6 +99,30 @@ int main(void) {
     	//printf (" <-- ASC\r\n");
     	printf ("\r\n");
     }
+}
+
+int main(void) {
+
+	SwitchMatrix_Init();
+
+
+    uart_init(9600);
+
+    uart_send_string_z ("LPC8xx_Flash_EEPROM \r\n");
+    uart_send_string_z ("A demo of using LPC8xx in-application programming (IAP) as a means to persist\r\n");
+    uart_send_string_z ("settings etc when CPU is unpowered.. ie a way to emulate the EEPROM function\r\n");
+    uart_send_string_z ("found in outher MCUs.\r\n\r\n");
+    uart_send_string_z ("Documentation from https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM\r\n");
+
+    printf ("flash_page=%x\r\n", eeprom_flashpage);
+
+
+    display_eeprom_page();
+
+    uart_send_string_z ("W <addr> <value>  : write byte to EEPROM bank\r\n");
+    uart_send_string_z ("S <addr> <string> : write string starting at <addr>\r\n");
+    uart_send_string_z ("R                 : read EEPROM bank\r\n");
+    uart_send_string_z ("Z                 : reboot device\r\n");
 
     return 0 ;
 }
