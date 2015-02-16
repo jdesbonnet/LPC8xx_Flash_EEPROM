@@ -38,14 +38,13 @@ void MyUARTInit(uint32_t baudrate)
 	NVIC_DisableIRQ(UART0_IRQn);
 
 	/* Enable UART clock */
-	// This is done in main() with other peripherals to save space.
-	//LPC_SYSCON->SYSAHBCLKCTRL |= (1<<14);
+	LPC_SYSCON->SYSAHBCLKCTRL |= (1<<14);
 
 
 	/* Peripheral reset control to UART, a "1" bring it out of reset. */
-	//LPC_SYSCON->PRESETCTRL &= ~(0x1<<3);
-	//LPC_SYSCON->PRESETCTRL |= (0x1<<3);
-	lpc8xx_peripheral_reset(3);
+	LPC_SYSCON->PRESETCTRL &= ~(0x1<<3);
+	LPC_SYSCON->PRESETCTRL |= (0x1<<3);
+	//lpc8xx_peripheral_reset(3);
 
 
 	UARTSysClk = SystemCoreClock/LPC_SYSCON->UARTCLKDIV;

@@ -28,17 +28,39 @@ int _write (int fd, const void *buf, size_t count) {
 	return count;
 }
 
+/**
+ * UART RXD on SOIC package pin 19
+ * UART TXD on SOIC package pin 5
+ */
+void SwitchMatrix_Init()
+{
+    /* Enable SWM clock */
+    //LPC_SYSCON->SYSAHBCLKCTRL |= (1<<7);
+
+    /* Pin Assign 8 bit Configuration */
+    /* U0_TXD */
+    /* U0_RXD */
+    LPC_SWM->PINASSIGN0 = 0xffff0004UL;
+
+    /* Pin Assign 1 bit Configuration */
+    /* SWCLK */
+    /* SWDIO */
+    /* RESET */
+    LPC_SWM->PINENABLE0 = 0xffffffb3UL;
+
+}
 
 int main(void) {
 
-    // TODO: insert code here
+	SwitchMatrix_Init();
 
-    // Force the counter to be placed into memory
-    volatile static int i = 0 ;
+
+    MyUARTInit(9600);
 
     printf ("Hello world! %d\r\n",1234);
 
     // Enter an infinite loop, just incrementing a counter
+    int i=0;
     while(1) {
         i++ ;
     }
