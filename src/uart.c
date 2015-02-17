@@ -67,8 +67,8 @@ void uart_init(uint32_t baudrate)
 	UARTx->STAT = UART_STAT_CTS_DELTA | UART_STAT_DELTA_RXBRK;		/* Clear all status bits. */
 
 	// Enable UART interrupt
-	//NVIC_EnableIRQ(UART0_IRQn);
-	//UARTx->INTENSET = UART_STAT_RXRDY | UART_STAT_TXRDY | UART_STAT_DELTA_RXBRK;	/* Enable UART interrupt */
+	NVIC_EnableIRQ(UART0_IRQn);
+	UARTx->INTENSET = UART_STAT_RXRDY | UART_STAT_TXRDY | UART_STAT_DELTA_RXBRK;	/* Enable UART interrupt */
 
 	UARTx->CFG |= UART_CFG_UART_EN;
 
@@ -144,15 +144,15 @@ void UART0_IRQHandler(void)
 			uart_rxbuf_flags |= UART_BUF_FLAG_EOL;
 			uart_rxbuf[uart_rxbuf_index]=0; // zero-terminate buffer
 		} else if (c>31){
-			// echo
-			uart_send_byte(c);
-
 			uart_rxbuf[uart_rxbuf_index] = c;
 			uart_rxbuf_index++;
 			if (uart_rxbuf_index == UART_BUF_SIZE) {
 				//MyUARTBufReset();
 			}
 		}
+
+		// echo
+		uart_send_byte(c);
 
 	} else if (uart_status & UART_STAT_TXRDY ){
 

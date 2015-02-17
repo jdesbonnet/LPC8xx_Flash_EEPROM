@@ -52,23 +52,18 @@ void myputc (void *p, char c) {
 void display_eeprom_page () {
     int i,j;
     uint8_t c;
-    for (i = 0; i < 4; i++) {
-    	tfp_printf ("%04x   ", (int)(&eeprom_flashpage) + (i * 16));
-    	for (j = 0; j<16; j++) {
-    		tfp_printf (" %02x ", eeprom_flashpage[i*16+j]);
-    	}
-    	tfp_printf ("\r\n");
-    	tfp_printf ("       ");
 
+    uart_send_string_z ("\r\nEEPROM page:\r\n");
+
+
+    for (i = 0; i < 4; i++) {
+    	print_hex16((uint16_t)(&eeprom_flashpage) + (i * 16));
+    	uart_send_string_z("  ");
     	for (j = 0; j<16; j++) {
-    		c = eeprom_flashpage[i*16+j];
-    		if (c < 32 || c > 126) {
-    			tfp_printf("   ");
-    		} else {
-    			tfp_printf(" %c ",c);
-    		}
+    		print_hex8(eeprom_flashpage[i*16+j]);
+    		uart_send_string_z(" ");
     	}
-    	tfp_printf ("\r\n");
+    	uart_send_string_z("\r\n");
     }
 }
 
@@ -76,25 +71,50 @@ int main(void) {
 
 	SwitchMatrix_Init();
 
-
     uart_init(9600);
 
-	init_printf(0,myputc);
-
     uart_send_string_z ("LPC8xx_Flash_EEPROM \r\n");
-    uart_send_string_z ("Documentation at https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM\r\n");
-
-    tfp_printf ("flash_page=%x\r\n", eeprom_flashpage);
-
+    //uart_send_string_z ("Documentation at https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM\r\n");
 
     display_eeprom_page();
 
+    uart_send_string_z ("\r\nCommands:\r\n");
+
     uart_send_string_z (" W <addr> <val> : write byte to EEPROM bank\r\n");
-    uart_send_string_z (" S <addr> <str> : write string starting at <addr>\r\n");
     uart_send_string_z (" R              : read EEPROM bank\r\n");
     uart_send_string_z (" Z              : reboot device\r\n");
-    uart_send_string_z (" <addr>         : index in bank from 0 to 40 (hex)");
-    uart_send_string_z (" <val>          : byte value from 0 to FF (hex)");
+    uart_send_string_z (" <addr>         : index in bank from 0 to 40 (hex)\r\n");
+    uart_send_string_z (" <val>          : byte value from 0 to FF (hex)\r\n");
 
+    char buf[20];
+
+    while (1) {
+        uart_send_string_z ("> ");
+    	uart_read_line(buf);
+    	if (buf[0]==0) {
+    		continue;
+    	}
+    	switch (buf[0]) {
+    	case 'W' : {
+
+    	}
+    	case 'S' : {
+
+    	}
+    	case 'R' : {
+    		display_eeprom_page();
+    		break;
+    	}
+    	case 'Z' : {
+    		uart_send_string_z("rebooting...\r\n");
+    		uart_drain();
+    		NVIC_SystemReset();
+    	}
+    	default : {
+    		uart_send_string_z("invalid command\r\n");
+    	}
+    	}
+
+    }
     return 0 ;
 }
