@@ -10,6 +10,8 @@ Currently compiles to just under 4KiB (without space optimization) so it should 
 I've got a more detailed write up on my blog:
 http://jdesbonnet.blogspot.ie/2015/02/nxp-lpc8xx-eeprom-emulation.html
 
+![screen grab](https://github.com/jdesbonnet/LPC8xx_Flash_EEPROM/blob/master/doc/Flash_EEPROM_screengrab_annotated.png)
+
 ##Acknowledgements
 
 This demo uses iap_driver.c code from an NXP example:
