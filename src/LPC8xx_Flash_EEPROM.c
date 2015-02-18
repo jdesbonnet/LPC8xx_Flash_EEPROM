@@ -160,6 +160,10 @@ int main(void) {
 
     	switch (buf[0]) {
     	case 'W' : {
+    		// Expecting format
+    		// W <addr> <val>
+    		// for example:
+    		// W 03 5F
     		int addr = parse_hex(args[1]);
     		int val = parse_hex(args[2]);
 
@@ -170,10 +174,17 @@ int main(void) {
     			uart_send_string_z("ERR: val too big\r\n");
     		}
 
+    		// Copy flash page to SRAM memory. Only SRAM can be written to
+    		// flash with iap.
     		uint8_t rambuf[64];
     		memcpy(rambuf,eeprom_flashpage,64);
+
+    		// Set byte
     		rambuf[addr] = val;
+
+    		// Write back from SRAM to flash
     		eeprom_write(rambuf);
+
     		break;
     	}
 
