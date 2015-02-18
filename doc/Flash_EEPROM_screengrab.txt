@@ -1,0 +1,34 @@
+LPC8xx_Flash_EEPROM 
+
+EEPROM page:
+0DC0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+0DD0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+0DE0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+0DF0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+
+Commands:
+ W <addr> <val> : write byte to EEPROM bank
+ R              : read EEPROM bank
+ Z              : reboot device
+ <addr>         : index in bank from 0 to 40 (hex)
+ <val>          : byte value from 0 to FF (hex)
+> W 4 CD
+time to write: 101 ms
+> Z
+rebooting!
+LPC8xx_Flash_EEPROM 
+
+EEPROM page:
+0DC0  00 00 00 00 CD 00 00 00 00 00 00 00 00 00 00 00 
+0DD0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+0DE0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+0DF0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+
+Commands:
+ W <addr> <val> : write byte to EEPROM bank
+ R              : read EEPROM bank
+ Z              : reboot device
+ <addr>         : index in bank from 0 to 40 (hex)
+ <val>          : byte value from 0 to FF (hex)
+> 
+
