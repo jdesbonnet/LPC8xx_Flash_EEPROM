@@ -5,9 +5,9 @@ Example LPC8xx project to show how the 64 byte page flash in-application program
 This can be used, for example, to preserve settings or network node
 addresses across power cycles. 
 
-Currently compiles to just under 4KiB (without space optimization) so it should work with all the LPC8xx range of MCUs including the LPC810. I'm uming LPCXpresso version 7.6.2 to build the project.
+Currently compiles to just under 4KiB (without space optimization) so it should work with all the LPC8xx range of MCUs including the LPC810. I'm using LPCXpresso IDE version 7.6.2 to build the project.
 
-Acknowledgements
+##Acknowledgements
 
 This demo uses iap_driver.c code from an NXP example:
 http://www.lpcware.com/content/forum/eeprom-emulation 
