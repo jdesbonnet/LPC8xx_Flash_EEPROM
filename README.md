@@ -7,9 +7,21 @@ addresses across power cycles.
 
 Currently compiles to just under 4KiB (without space optimization) so it should work with all the LPC8xx range of MCUs including the LPC810. I'm uming LPCXpresso version 7.6.2 to build the project.
 
+Acknowledgements
+
+This demo uses iap_driver.c code from an NXP example:
+http://www.lpcware.com/content/forum/eeprom-emulation 
+
+Thanks to @markt and @Chris Stratton on electronics.stackexchange.com
+for tips on how best to allocate space in flash memory to use as an
+EEPROM bank. Ref thread:
+http://electronics.stackexchange.com/questions/153424/how-to-automatically-allocate-a-page-of-flash-for-in-application-storage-of-sett
+
+
 Enjoy,
 
 Joe Desbonnet
 jdesbonnet@gmail.com
 
+18 Feb 2015.
 
