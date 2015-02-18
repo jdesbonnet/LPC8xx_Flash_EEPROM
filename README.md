@@ -7,6 +7,9 @@ addresses across power cycles.
 
 Currently compiles to just under 4KiB (without space optimization) so it should work with all the LPC8xx range of MCUs including the LPC810. I'm using LPCXpresso IDE version 7.6.2 to build the project.
 
+I've got a more detailed write up on my blog:
+http://jdesbonnet.blogspot.ie/2015/02/nxp-lpc8xx-eeprom-emulation.html
+
 ##Acknowledgements
 
 This demo uses iap_driver.c code from an NXP example:
