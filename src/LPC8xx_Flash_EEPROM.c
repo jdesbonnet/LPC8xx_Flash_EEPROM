@@ -110,7 +110,6 @@ int32_t eeprom_write (uint8_t *data) {
 	return 0;
 }
 
-
 int main(void) {
 
 	SwitchMatrix_Init();
@@ -169,9 +168,11 @@ int main(void) {
 
     		if (addr >= 0x40) {
     			uart_send_string_z("ERR: addr too big\r\n");
+    			continue;
     		}
     		if (val > 0xFF) {
     			uart_send_string_z("ERR: val too big\r\n");
+    			continue;
     		}
 
     		// Copy flash page to SRAM memory. Only SRAM can be written to

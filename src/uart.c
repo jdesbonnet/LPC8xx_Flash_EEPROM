@@ -143,16 +143,16 @@ void UART0_IRQHandler(void)
 		if (c=='\r') {
 			uart_rxbuf_flags |= UART_BUF_FLAG_EOL;
 			uart_rxbuf[uart_rxbuf_index]=0; // zero-terminate buffer
+			uart_send_string_z("\r\n");
 		} else if (c>31){
 			uart_rxbuf[uart_rxbuf_index] = c;
 			uart_rxbuf_index++;
-			if (uart_rxbuf_index == UART_BUF_SIZE) {
+			//if (uart_rxbuf_index == UART_BUF_SIZE) {
 				//MyUARTBufReset();
-			}
+			//}
+			uart_send_byte(c);
 		}
 
-		// echo
-		uart_send_byte(c);
 
 	} else if (uart_status & UART_STAT_TXRDY ){
 
