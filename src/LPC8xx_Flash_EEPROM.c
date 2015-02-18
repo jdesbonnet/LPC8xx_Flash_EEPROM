@@ -14,15 +14,19 @@
 
 #include <cr_section_macros.h>
 
-//#include <sys/types.h>
+#include <string.h>
 #include "uart.h"
-#include "printf.h"
+#include "print.h"
+#include "parse.h"
+#include "iap_driver.h"
 
 // Allocate a 64 byte aligned 64 byte block in flash memory for "EEPROM" storage
 const uint32_t eeprom_flashpage[64] __attribute__ ((aligned (64))) = {0};
 
 
 /**
+ * Configure SwitchMatrix to enable UART on pins used for incircuit serial programming.
+ *
  * UART RXD on SOIC package pin 19
  * UART TXD on SOIC package pin 5
  */
@@ -44,14 +48,11 @@ void SwitchMatrix_Init()
 
 }
 
-// To facilitate tfp_printf()
-void myputc (void *p, char c) {
-	uart_send_byte(c);
-}
-
+/**
+ * Display contents of flash page used for the "EEPROM" to UART.
+ */
 void display_eeprom_page () {
     int i,j;
-    uint8_t c;
 
     uart_send_string_z ("\r\nEEPROM page:\r\n");
 
@@ -66,6 +67,49 @@ void display_eeprom_page () {
     	uart_send_string_z("\r\n");
     }
 }
+
+/**
+ * Write 64 byte page to flash.
+ *
+ * @param data Pointer to 64 byte block of memory to write to flash. This must be in SRAM
+ * area of memory.
+ *
+ * @return 0 for success, negative value for error.
+ */
+int32_t eeprom_write (uint8_t *data) {
+
+	uint32_t iap_status;
+
+	iap_init();
+
+	uint32_t flash_page = (uint32_t)&eeprom_flashpage >> 6;
+	uint32_t flash_sector = flash_page >> 4;
+
+	// Example code checks MCU part ID, bootcode revision number and serial number. There are some
+	// differences in behavior across silicon revisions (in particular to do with ability
+	// to erase multiple sectors at the same time). In this case we require to be able to program
+	// just one sector, so this does not conern us.
+
+	/* Prepare the page for erase */
+	iap_status = (__e_iap_status) iap_prepare_sector(flash_sector, flash_sector);
+	if (iap_status != CMD_SUCCESS) return -4;
+
+	/* Erase the page */
+	iap_status = (__e_iap_status) iap_erase_page(flash_page, flash_page);
+	if (iap_status != CMD_SUCCESS) return -5;
+
+	/* Prepare the page for writing */
+	iap_status = (__e_iap_status) iap_prepare_sector(flash_sector, flash_sector);
+	if (iap_status != CMD_SUCCESS) return -6;
+
+	/* Write data to page */
+	iap_status = (__e_iap_status) iap_copy_ram_to_flash(data,
+			(void *)&eeprom_flashpage, 64);
+	if (iap_status != CMD_SUCCESS) return -7;
+
+	return 0;
+}
+
 
 int main(void) {
 
@@ -86,32 +130,64 @@ int main(void) {
     uart_send_string_z (" <addr>         : index in bank from 0 to 40 (hex)\r\n");
     uart_send_string_z (" <val>          : byte value from 0 to FF (hex)\r\n");
 
+    int argc;
+    char *args[4];
     char buf[20];
+    char *s;
 
     while (1) {
+
+    	// Display prompt and wait for CR terminated line of input
         uart_send_string_z ("> ");
     	uart_read_line(buf);
+
+    	// Ignore empty lines
     	if (buf[0]==0) {
     		continue;
     	}
+
+    	// Split command line into space separated args
+		args[0] = s = buf;
+		argc = 1;
+		while (*s != 0) {
+			if (*s == ' ') {
+				*s = 0;
+				args[argc++] = s+1;
+			}
+			s++;
+		}
+
+
     	switch (buf[0]) {
     	case 'W' : {
+    		int addr = parse_hex(args[1]);
+    		int val = parse_hex(args[2]);
 
-    	}
-    	case 'S' : {
+    		if (addr >= 0x40) {
+    			uart_send_string_z("ERR: addr too big\r\n");
+    		}
+    		if (val > 0xFF) {
+    			uart_send_string_z("ERR: val too big\r\n");
+    		}
 
+    		uint8_t rambuf[64];
+    		memcpy(rambuf,eeprom_flashpage,64);
+    		rambuf[addr] = val;
+    		eeprom_write(rambuf);
+    		break;
     	}
+
     	case 'R' : {
     		display_eeprom_page();
     		break;
     	}
     	case 'Z' : {
-    		uart_send_string_z("rebooting...\r\n");
+    		uart_send_string_z("rebooting!\r\n");
     		uart_drain();
     		NVIC_SystemReset();
     	}
     	default : {
-    		uart_send_string_z("invalid command\r\n");
+    		uart_send_string_z("ERR: invalid cmd\r\n");
     	}
     	}
 

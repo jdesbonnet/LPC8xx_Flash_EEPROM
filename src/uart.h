@@ -46,6 +46,9 @@
 
 void uart_init(uint32_t baudrate);
 void uart_send_byte(uint8_t v);
+void uart_send_string_z(char *);
+
 int uart_read_line(char *buf);
+void uart_drain (void);
 
 #endif /* MYUART_H_ */
