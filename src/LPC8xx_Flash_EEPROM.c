@@ -21,7 +21,7 @@
 #include "iap_driver.h"
 
 // Allocate a 64 byte aligned 64 byte block in flash memory for "EEPROM" storage
-const uint32_t eeprom_flashpage[64] __attribute__ ((aligned (64))) = {0};
+const uint8_t eeprom_flashpage[64] __attribute__ ((aligned (64))) = {0};
 
 
 /**
@@ -56,7 +56,6 @@ void display_eeprom_page () {
 
     uart_send_string_z ("\r\nEEPROM page:\r\n");
 
-
     for (i = 0; i < 4; i++) {
     	print_hex16((uint16_t)(&eeprom_flashpage) + (i * 16));
     	uart_send_string_z("  ");
@@ -71,8 +70,9 @@ void display_eeprom_page () {
 /**
  * Write 64 byte page to flash.
  *
- * @param data Pointer to 64 byte block of memory to write to flash. This must be in SRAM
- * area of memory.
+ * @param data Pointer to 64 byte block of memory to write to flash.
+ * This address *must* be in SRAM (writing from flash memory
+ * won't work, eg using const defined in the program as param won't work).
  *
  * @return 0 for success, negative value for error.
  */
@@ -88,7 +88,7 @@ int32_t eeprom_write (uint8_t *data) {
 	// Example code checks MCU part ID, bootcode revision number and serial number. There are some
 	// differences in behavior across silicon revisions (in particular to do with ability
 	// to erase multiple sectors at the same time). In this case we require to be able to program
-	// just one sector, so this does not conern us.
+	// just one sector, so this does not concern us.
 
 	/* Prepare the page for erase */
 	iap_status = (__e_iap_status) iap_prepare_sector(flash_sector, flash_sector);
@@ -134,6 +134,9 @@ int main(void) {
     char buf[20];
     char *s;
 
+    // 64 byte block in SRAM: needed as eeprom_write() param must be in SRAM.
+	uint8_t rambuf[64];
+
     while (1) {
 
     	// Display prompt and wait for CR terminated line of input
@@ -175,9 +178,7 @@ int main(void) {
     			continue;
     		}
 
-    		// Copy flash page to SRAM memory. Only SRAM can be written to
-    		// flash with iap.
-    		uint8_t rambuf[64];
+    		// Copy from flash page to SRAM buffer
     		memcpy(rambuf,eeprom_flashpage,64);
 
     		// Set byte
